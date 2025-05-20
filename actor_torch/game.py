@@ -30,7 +30,7 @@ RANK = {
     'T':9, 'J':10, 'Q':11, 'K':12, 'A':13
 }
 
-
+# 用flag 来区分编码一个是编码级数，另一个编码剩余的牌
 def _get_one_hot_array(num_left_cards, max_num_cards, flag):
     if flag == 0:     # 级数的情况
         one_hot = np.zeros(max_num_cards)
@@ -40,7 +40,7 @@ def _get_one_hot_array(num_left_cards, max_num_cards, flag):
         one_hot[num_left_cards] = 1
     return one_hot
 
-
+# 创建一个二维数组，行数为 action_seq_list 的长度（即历史动作数量） 用于记录出牌历史
 def _action_seq_list2array(action_seq_list):
     action_seq_array = np.zeros((len(action_seq_list), 54))
     for row, list_cards in enumerate(action_seq_list):
@@ -48,7 +48,7 @@ def _action_seq_list2array(action_seq_list):
     action_seq_array = action_seq_array.reshape(5, 216)
     return action_seq_array
 
-
+# 丢弃较早的动作，对较短的动作序列进行补全，padding
 def _process_action_seq(sequence, length=20):
     sequence = sequence[-length:].copy()
     if len(sequence) < length:
