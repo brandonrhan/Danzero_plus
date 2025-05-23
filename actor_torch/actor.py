@@ -11,7 +11,7 @@ import os
 import gc
 
 import numpy as np
-import zmq
+import zmq # Communication
 from pathlib import Path
 from model import MLPActorCritic, MLPQNetwork
 from pyarrow import deserialize, serialize
@@ -20,7 +20,7 @@ from utils.data_trans import (create_experiment_dir, find_new_weights,
                               run_weights_subscriber)
 from utils.utils import *
 
-ActionNumber = 2
+ActionNumber = 2 # Select the rank 2rd action
 parser = ArgumentParser()
 parser.add_argument('--ip', type=str, default='172.15.15.2',
                     help='IP address of learner server')
@@ -37,7 +37,7 @@ parser.add_argument('--observation_space', type=int, default=(567,),
 parser.add_argument('--action_space', type=int, default=(5, 216),
                     help='The YAML configuration file')
 parser.add_argument('--epsilon', type=float, default=0.01,
-                    help='Epsilon')
+                    help='Epsilon') # 0.1 use new Strategy, with 0.90 select the best strtegy
 torch.set_num_threads(8)
 
 class Player():
@@ -94,20 +94,43 @@ class Player():
         print('set weight success')
 
     def sample(self, state) -> int:
+        """
+        根据当前状态选择动作，使用AC模型进行策略预测。
+        
+        参数:
+            state: 包含状态信息的字典，包含 'x_batch' 和 'x_no_action'
+        x_batch： 所有可执行的动作
+        x_no_action：除了动作信息以为的参数，当前玩家手牌，场上牌数
+
+        返回:
+            返回选择的动作索引
+        """
+        # 提取状态信息
         states = state['x_batch']
         state_no_action = state['x_no_action']
         legal_action = ActionNumber
         legal_index = np.ones(ActionNumber)
+
+        # 如果可选动作数大于等于ActionNumber，则取TopN动作
         if len(states) >= ActionNumber:
+            # 获取Q网络评分最高的ActionNumber个动作索引
             indexs = self.model_q.get_max_n_index(states, ActionNumber)
             dqn_states = np.asarray(states[indexs])
             top_actions = dqn_states[:, -54:].flatten()
+            # 将当前状态与top动作特征拼接，形成新的输入状态
             states = np.concatenate((state_no_action, top_actions))
+        
+        # 如果可选动作数小于ActionNumber，则需要对不足部分进行填充
         elif len(states) < ActionNumber:
             legal_action = len(states)
+            # 将legal_index中超出实际合法动作的部分置零，标记非法动作
             legal_index[legal_action:] = np.zeros(ActionNumber-legal_action)
+            
+            # 使用Q网络获取Top N个动作索引（N=ActionNumber）
             top_indexs = self.model_q.get_max_n_index(states, ActionNumber)
             dqn_states = np.asarray(states[top_indexs])
+            # 提取top动作的最后54位特征作为动作表示
+            # 567维”是指整个状态（state）的维度，其中最后 54 位专门用来表示当前动作（action）的特征。
             top_actions = dqn_states[:, -54:].flatten()
             states = np.concatenate((state_no_action, top_actions))  # 把动作先添加进来
             supple = -1 * np.ones(54 * (ActionNumber - legal_action))
@@ -122,6 +145,8 @@ class Player():
         self.mb_actions.append(action)
         self.mb_values.append([value])
         self.mb_neglogp.append([neglogp])
+
+        # 返回对应的动作索引
         return indexs[action]
         
     def update_weight(self):

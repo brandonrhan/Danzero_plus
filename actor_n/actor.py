@@ -31,7 +31,7 @@ parser.add_argument('--num_saved_ckpt', type=int, default=4,
                     help='Number of recent checkpoint files to be saved')
 parser.add_argument('--observation_space', type=int, default=(567,),
                     help='The YAML configuration file')
-parser.add_argument('--action_space', type=int, default=(5, 216),
+parser.add_argument('--action_space', type=int, default=(5, 216), # 5 种类别，每种类型最多支持216种出牌方式
                     help='The YAML configuration file')
 parser.add_argument('--epsilon', type=float, default=0.01,
                     help='Epsilon')
@@ -46,9 +46,20 @@ class Player():
         set_session(tf.Session(config=config))
 
         # 数据初始化
+        # mb_states_no_action: 存储没有动作的历史状态（环境观测值）
+        # mb_actions: 存储当前选择的动作
+        # mb_rewards: 存储当前获得的奖励
+        # mb_q: 存储当前动作的Q值 期望
         self.mb_states_no_action, self.mb_actions, self.mb_rewards, self.mb_q = [], [], [], []
+
+        # all_mb_states_no_action：存储所有历史状态（环境观测值）
+        # all_mb_actions: 存储所有动作
+        # all_mb_rewards: 存储所有奖励
+        # all_mb_q: 存储所有动作的Q值
         self.all_mb_states_no_action, self.all_mb_actions, self.all_mb_rewards, self.all_mb_q = [], [], [], []
+
         self.args = args
+        # 做了动作才会增加 不出牌不会变
         self.step = 0
         self.num_set_weight = 0
         self.send_times = 1
