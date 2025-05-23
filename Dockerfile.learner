@@ -1,0 +1,20 @@
+# ✅ Use NVIDIA's official TensorFlow 1.15.5+nv22.2 image (Python 3.8, CUDA 11.1)
+FROM nvcr.io/nvidia/tensorflow:20.12-tf1-py3
+
+# 📦 Install Python dependencies
+RUN pip install --upgrade pip && \
+    pip install \
+        numpy==1.18.5 \
+        pyarrow==5.0.0 \
+        pyzmq==22.3.0 \
+        ws4py==0.5.1 \
+        torch==1.13.1+cu116 -f https://download.pytorch.org/whl/cu116/torch_stable.html
+
+# 🔧 Set working directory
+WORKDIR /app
+
+# 📂 Copy project files
+COPY . /app
+
+# 🐚 Default command
+CMD ["/bin/bash"]

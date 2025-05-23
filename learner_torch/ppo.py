@@ -30,15 +30,15 @@ class PPOAgent:
         # Train policy with multiple steps of gradient descent
         for _ in range(self.train_iters):
             self.optimizer.zero_grad()
-            loss_pi, loss_v, loss_ent, pi_info = self.compute_loss(data)
-            loss = loss_pi + 0.5 * loss_v + 0.05 * loss_ent
+            loss_pi, loss_v, loss_ent, pi_info = self.compute_loss(data) # Policy loss, value loss, entropy loss
+            loss = loss_pi + 0.5 * loss_v + 0.05 * loss_ent 
             kl = mpi_avg(pi_info['kl'])
             if kl > 1.5 * self.target_kl:
                 break
-            loss.backward()
+            loss.backward() # Computes gradients via backpropagation
             mpi_avg_grads(self.ac)    # average grads across MPI processes
-            torch.nn.utils.clip_grad_norm_(self.ac.parameters(), 10)
-            self.optimizer.step()
+            torch.nn.utils.clip_grad_norm_(self.ac.parameters(), 10) # Clip
+            self.optimizer.step() # Updates the weights using the gradients
             time.sleep(0.1)
         #time.sleep(1)
 

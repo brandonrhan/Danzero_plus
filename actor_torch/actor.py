@@ -259,7 +259,7 @@ def run_one_player(index, args):
         if not isinstance(state, int) and not isinstance(state, float) and not isinstance(state, str):
             action_index = player.sample(state)
             socket.send(serialize(action_index).to_buffer())
-        elif isinstance(state, str):
+        elif isinstance(state, str): # Win or lose
             socket.send(b'none')
             if state[0] == 'y':
                 player.save_data(int(state[1]))

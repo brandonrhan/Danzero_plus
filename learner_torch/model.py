@@ -109,7 +109,7 @@ class MLPActorCritic(nn.Module):
 
     def step(self, obs, legal_action):
         with torch.no_grad():
-            shared_feature = self.shared(obs)
+            shared_feature = self.shared(obs) # Shared 
             # print(shared_feature.shape, legal_action.shape)
             logits = torch.squeeze(self.pi(shared_feature)) - (1 - legal_action) * 1e8
             pi = Categorical(logits=logits)
@@ -122,9 +122,9 @@ class MLPActorCritic(nn.Module):
         return a.numpy(), v.numpy(), logp_a.numpy()
 
     def forward(self, obs, act, legal_action):
-        shared_feature = self.shared(obs)
-        value = torch.squeeze(self.v(shared_feature), -1)
-        logits = torch.squeeze(self.pi(shared_feature)) - (1 - legal_action) * 1e8
+        shared_feature = self.shared(obs) # Shared
+        value = torch.squeeze(self.v(shared_feature), -1) # Value Head
+        logits = torch.squeeze(self.pi(shared_feature)) - (1 - legal_action) * 1e8 # Logits Head
         pi = Categorical(logits=logits)
         logp_a = None
         if act is not None:
@@ -164,7 +164,7 @@ class MLPQNetwork(nn.Module):
     def get_max_10index(self, data):
         q_list = self.q(data)
         q_list = q_list.cpu().detach().numpy()
-        return q_list.argsort()[-10:][::-1]
+        return q_list.argsort()[-10:][::-1] # Top-10 Q-value actions
 
 
 if __name__ == '__main__':

@@ -21,6 +21,7 @@ from utils.cmdline import parse_cmdline_kwargs
 
 warnings.filterwarnings("ignore")
 
+# Parser arguments
 parser = ArgumentParser()
 parser.add_argument('--env', type=str, default='GuanDan', help='The game environment')
 parser.add_argument('--data_port', type=int, default=5000, help='Learner server port to receive training data')
@@ -102,35 +103,36 @@ def main():
 
         if len(mem_pool) >= args.batch_size:
             # Sync weights to actor
-            weights = agent.get_weights()
+            weights = agent.get_weights() # Retrieve current weights from the ppo agent
             # weights_socket.send(pickle.dumps(weights))
 
             if model_save_freq%args.ckpt_save_freq == 0:
                 if args.ckpt_save_type == 'checkpoint':
-                    agent.save(args.ckpt_path / 'ckpt')
+                    agent.save(args.ckpt_path / 'ckpt') # Save full checkpoint
                 elif args.ckpt_save_type == 'weight':
                     with open(args.ckpt_path / f'ppo{model_save_freq}.pth', 'wb') as f:
-                        pickle.dump(weights, f)
+                        pickle.dump(weights, f) # Save model weights only
 
-            if args.keep_training:
+            if args.keep_training: # Off policy
                 agent.update(mem_pool.sample(size=args.batch_size))
-            else:
+            else: # On policy
                 with receiving_condition:
                     while num_receptions.value < args.training_freq:
-                        receiving_condition.wait()
-                    data = mem_pool.sample(size=args.batch_size)
+                        receiving_condition.wait() # Wait for new data signal
+                    data = mem_pool.sample(size=args.batch_size) # Sample batch
                     num_receptions.value -= args.training_freq
-                # Training
                 stat = agent.update(data)
                 model_update_times += 1
-                weights = agent.get_weights()
+                weights = agent.get_weights() # Get new weights
                 with open(f'/home/zhaoyp/guandan_tog/learner_torch/ckpt_bak/{model_update_times}.pth', 'wb') as f:
                     pickle.dump(weights, f)
                 
                 if model_update_times > 4:
-                    os.remove(f'/home/zhaoyp/guandan_tog/learner_torch/ckpt_bak/{model_update_times - 5}.pth')
+                    os.remove(f'/home/zhaoyp/guandan_tog/learner_torch/ckpt_bak/{model_update_times - 5}.pth') # Rotate old files
                 # print(stat)
                 # if log_times%1000 == 0:
+                
+                # Logging
                 if log_times%100 == 0:
                     stats = defaultdict(list)
                     for k, v in stat.items():
@@ -138,9 +140,9 @@ def main():
                     stat = {k: np.array(v).mean() for k, v in stats.items()}
                     if stat is not None:
                         for k, v in stat.items():
-                            logger.record_tabular(k, v)
-                        logger.record_tabular('model_id', model_save_freq)
-                    logger.dump_tabular()
+                            logger.record_tabular(k, v)  # Log training stat
+                        logger.record_tabular('model_id', model_save_freq) # Save model version
+                    logger.dump_tabular()  # Print log to terminal or file
                 else:
                     log_times += 1
 
@@ -153,8 +155,8 @@ def recv_data(data_port, mem_pool, receiving_condition, num_receptions, keep_tra
     data_socket.bind(f'tcp://*:{data_port}')
 
     while True:
-        data: dict = deserialize(data_socket.recv())
-        data_socket.send(b'200')
+        data: dict = deserialize(data_socket.recv()) # BLOCKING
+        data_socket.send(b'200') 
 
         if keep_training:
             mem_pool.push(data)
@@ -162,7 +164,7 @@ def recv_data(data_port, mem_pool, receiving_condition, num_receptions, keep_tra
             with receiving_condition:
                 mem_pool.push(data)
                 num_receptions.value += 1
-                receiving_condition.notify()
+                receiving_condition.notify() # Signals the trainer that new data is ready
 
 
 if __name__ == '__main__':
