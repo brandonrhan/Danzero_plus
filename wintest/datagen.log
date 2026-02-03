@@ -1,0 +1,6 @@
+nohup: ignoring input
+python: can't open file 'danzero/server.py': [Errno 2] No such file or directory
+Start evaluation at: 2026-01-26 10:42:26
+Logging to: ./logs_new/log-client0-20260126104226.jsonl
+start0
+start2
