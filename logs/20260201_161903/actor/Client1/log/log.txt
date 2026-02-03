@@ -1,0 +1,1 @@
+Logging to /mnt/c/Users/admin/Documents/GitHub/danzero_oracle/logs/20260201_161903/actor/Client1/log

@@ -43,7 +43,7 @@ def create_experiment_dir(args, prefix: str) -> None:
         os.system(f'rm -rf {args.exp_path}')
         # raise FileExistsError(f'Experiment directory {str(args.exp_path)!r} already exists')
 
-    args.exp_path.mkdir()
+    args.exp_path.mkdir(parents=True, exist_ok=True)
 
 
 def run_weights_subscriber(args, unknown_args):

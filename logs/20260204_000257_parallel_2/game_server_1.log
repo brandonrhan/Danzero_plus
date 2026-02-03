@@ -1,0 +1,48 @@
+2026-02-04 00:03:01.984279: INFO: Server started at 127.0.0.1:23466
+msg_type: server_info
+server_ip: 127.0.0.1
+server_port: 23466
+2026-02-04 00:03:04.195536: INFO: Client connected: client_id 145425640
+2026-02-04 00:03:04.397326: INFO: Client connected: client_id 83791978
+2026-02-04 00:03:04.600706: INFO: Client connected: client_id 598734436
+2026-02-04 00:03:04.803661: INFO: Client connected: client_id 739770562
+2026-02-04 00:03:17.631247: INFO: Client disconnected: client_id 739770562
+2026-02-04 00:03:17.635320: SEVERE: Failed to handle disconnection for client_id 739770562
+Error: Null check operator used on a null value
+StackTrace: #0      RemoteAgent.player (package:guandan_game_room/src/player_agent.dart:361)
+#1      PlayerAgent.playerId (package:guandan_game_room/src/player_agent.dart:67)
+#2      WebSocketServer._handleWebSocket.onDisconnected (package:guandan_server/src/web_server.dart:84)
+<asynchronous suspension>
+#3      WebSocketServer._handleWebSocket.<anonymous closure> (package:guandan_server/src/web_server.dart:115)
+<asynchronous suspension>
+
+2026-02-04 00:03:17.635989: INFO: Client disconnected: client_id 598734436
+2026-02-04 00:03:17.636029: SEVERE: Failed to handle disconnection for client_id 598734436
+Error: Null check operator used on a null value
+StackTrace: #0      RemoteAgent.player (package:guandan_game_room/src/player_agent.dart:361)
+#1      PlayerAgent.playerId (package:guandan_game_room/src/player_agent.dart:67)
+#2      WebSocketServer._handleWebSocket.onDisconnected (package:guandan_server/src/web_server.dart:84)
+<asynchronous suspension>
+#3      WebSocketServer._handleWebSocket.<anonymous closure> (package:guandan_server/src/web_server.dart:115)
+<asynchronous suspension>
+
+2026-02-04 00:03:17.636159: INFO: Client disconnected: client_id 83791978
+2026-02-04 00:03:17.636192: SEVERE: Failed to handle disconnection for client_id 83791978
+Error: Null check operator used on a null value
+StackTrace: #0      RemoteAgent.player (package:guandan_game_room/src/player_agent.dart:361)
+#1      PlayerAgent.playerId (package:guandan_game_room/src/player_agent.dart:67)
+#2      WebSocketServer._handleWebSocket.onDisconnected (package:guandan_server/src/web_server.dart:84)
+<asynchronous suspension>
+#3      WebSocketServer._handleWebSocket.<anonymous closure> (package:guandan_server/src/web_server.dart:115)
+<asynchronous suspension>
+
+2026-02-04 00:03:17.636303: INFO: Client disconnected: client_id 145425640
+2026-02-04 00:03:17.636337: SEVERE: Failed to handle disconnection for client_id 145425640
+Error: Null check operator used on a null value
+StackTrace: #0      RemoteAgent.player (package:guandan_game_room/src/player_agent.dart:361)
+#1      PlayerAgent.playerId (package:guandan_game_room/src/player_agent.dart:67)
+#2      WebSocketServer._handleWebSocket.onDisconnected (package:guandan_server/src/web_server.dart:84)
+<asynchronous suspension>
+#3      WebSocketServer._handleWebSocket.<anonymous closure> (package:guandan_server/src/web_server.dart:115)
+<asynchronous suspension>
+

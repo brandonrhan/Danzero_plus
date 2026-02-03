@@ -1,0 +1,1 @@
+Logging to test_actor/Client1/log

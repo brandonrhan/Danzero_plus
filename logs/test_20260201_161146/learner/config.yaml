@@ -1,0 +1,25 @@
+learner:
+  alg: MC
+  env: GuanDan
+  data_port: 5000
+  param_port: 5001
+  model: guandan_model
+  pool_size: 1024
+  batch_size: 32
+  training_freq: 2
+  keep_training: false
+  record_throughput_interval: 5
+  num_envs: 1
+  ckpt_save_freq: 3000
+  ckpt_save_type: weight
+  observation_space: !!python/tuple
+    - 567
+  action_space: !!python/tuple
+    - 5
+    - 216
+  epsilon: 0.01
+
+agent:
+  lr: 0.001
+  model:
+    model_id: '0'

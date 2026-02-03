@@ -1,0 +1,12 @@
+2026-02-04 00:03:02,545 - INFO - Starting Oracle Proxy Server on port 23467
+2026-02-04 00:03:02,546 - INFO - Forwarding to upstream server at localhost:23466
+2026-02-04 00:03:02,561 - INFO - server listening on 0.0.0.0:23467
+2026-02-04 00:03:02,562 - INFO - Proxy server is running. Press Ctrl+C to stop.
+2026-02-04 00:03:04,190 - INFO - connection open
+2026-02-04 00:03:04,190 - INFO - New client connected, assigned position 0, path=/game/client0
+2026-02-04 00:03:04,395 - INFO - connection open
+2026-02-04 00:03:04,396 - INFO - New client connected, assigned position 1, path=/game/client1
+2026-02-04 00:03:04,598 - INFO - connection open
+2026-02-04 00:03:04,599 - INFO - New client connected, assigned position 2, path=/game/client2
+2026-02-04 00:03:04,801 - INFO - connection open
+2026-02-04 00:03:04,802 - INFO - New client connected, assigned position 3, path=/game/client3

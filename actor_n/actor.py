@@ -1,3 +1,10 @@
+"""
+Oracle Actor for DanZero
+
+This actor uses the oracle model (729-dim input) for training with full hand visibility.
+Connects to learner to send training data and receive model updates.
+"""
+
 import os
 import time
 from argparse import ArgumentParser
@@ -12,7 +19,7 @@ from pyarrow import deserialize, serialize
 from tensorflow.keras.backend import set_session
 
 
-from model import GDModel
+from model import GDOracleModel, ORACLE_INPUT_DIM, ORACLE_STATE_DIM
 from utils import logger
 from utils.data_trans import (create_experiment_dir, find_new_weights,
                               run_weights_subscriber)
@@ -29,14 +36,22 @@ parser.add_argument('--exp_path', type=str, default='/home/root/log',
                     help='Directory to save logging data, model parameters and config file')
 parser.add_argument('--num_saved_ckpt', type=int, default=4,
                     help='Number of recent checkpoint files to be saved')
-parser.add_argument('--observation_space', type=int, default=(567,),
-                    help='The YAML configuration file')
-parser.add_argument('--action_space', type=int, default=(5, 216), # 5 种类别，每种类型最多支持216种出牌方式
-                    help='The YAML configuration file')
+parser.add_argument('--base_port', type=int, default=6000,
+                    help='Base port for actor ZMQ sockets (will use base_port + 0,1,2,3)')
+# Oracle: 使用729维输入（原始567 + 3*54 oracle信息）
+parser.add_argument('--observation_space', type=int, default=(ORACLE_INPUT_DIM,),
+                    help='Observation space dimension (729 for oracle)')
+parser.add_argument('--action_space', type=int, default=(5, 216),
+                    help='Action space: 5 types, max 216 actions per type')
 parser.add_argument('--epsilon', type=float, default=0.01,
-                    help='Epsilon')
+                    help='Epsilon for exploration')
 
-class Player():
+
+class OraclePlayer():
+    """
+    Oracle Player that uses GDOracleModel with 729-dim input
+    """
+    
     def __init__(self, args) -> None:
         # Set 'allow_growth'
         os.environ["TF_CPP_MIN_LOG_LEVEL"] = '3'
@@ -64,9 +79,10 @@ class Player():
         self.num_set_weight = 0
         self.send_times = 1
 
-        # 模型初始化
+        # Oracle模型初始化 - 729维输入
         self.model_id = -1
-        self.model = GDModel(self.args.observation_space, (5, 216))
+        self.model = GDOracleModel(self.args.observation_space, (5, 216))
+        print(f"[Oracle Actor] Initialized with {ORACLE_INPUT_DIM}-dim input")
 
         # 连接learner
         context = zmq.Context()
@@ -165,13 +181,14 @@ class Player():
 
 
 def run_one_player(index, args):
+    """Run a single oracle player"""
     args.client_index = index
-    player = Player(args)
+    player = OraclePlayer(args)
 
     # 初始化zmq
     context = zmq.Context()
     socket = context.socket(zmq.REP)
-    socket.bind(f'tcp://*:{6000+index}')
+    socket.bind(f'tcp://*:{args.base_port+index}')
 
     action_index = 0
     while True:
@@ -181,21 +198,33 @@ def run_one_player(index, args):
             action_index = player.sample(state)
             socket.send(serialize(action_index).to_buffer())
         elif isinstance(state, str):
+            # String reward like 'y3' or 'n2' - special end game case
             socket.send(b'none')
             if state[0] == 'y':
                 player.save_data(int(state[1]))
+                reward_str = state
             else:
                 player.save_data(-int(state[1]))
-            player.send_data(state)
+                reward_str = state
+            player.send_data(reward_str)
             player.update_weight()
         else:
+            # Integer/float reward - normal end game case  
             socket.send(b'none')
             player.save_data(state)
+            # Convert int reward to string format for send_data
+            if state >= 0:
+                reward_str = f'y{state}'
+            else:
+                reward_str = f'n{-state}'
+            player.send_data(reward_str)
+            player.update_weight()
 
 
 def main():
-    # 参数传递
+    """Main entry point for oracle actor"""
     args, _ = parser.parse_known_args()
+    print(f"[Oracle Actor] Starting with observation_space={args.observation_space}")
 
     def exit_wrapper(index, *x, **kw):
         """Exit all actors on KeyboardInterrupt (Ctrl-C)"""

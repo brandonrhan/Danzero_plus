@@ -35,7 +35,10 @@ class Player():
 
         # 模型初始化
         self.model  = GDModel(args.observation_space, (5, 216))
-        with open('./q_network.ckpt', 'rb') as f:
+        # Get the directory where this script is located
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        ckpt_path = os.path.join(script_dir, 'q_network.ckpt')
+        with open(ckpt_path, 'rb') as f:
             new_weights = pickle.load(f)
         self.model.set_weights(new_weights)
     

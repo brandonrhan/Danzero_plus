@@ -1,0 +1,4 @@
+2026-02-04 00:02:07.808015: INFO: Server started at 10.255.255.254:23456
+msg_type: server_info
+server_ip: 10.255.255.254
+server_port: 23456

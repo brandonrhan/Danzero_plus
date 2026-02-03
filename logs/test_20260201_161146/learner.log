@@ -1,0 +1,6 @@
+WARNING:tensorflow:From learner.py:23: The name tf.logging.set_verbosity is deprecated. Please use tf.compat.v1.logging.set_verbosity instead.
+
+WARNING:tensorflow:From learner.py:23: The name tf.logging.ERROR is deprecated. Please use tf.compat.v1.logging.ERROR instead.
+
+model build success
+Logging to /mnt/c/Users/admin/Documents/GitHub/danzero_oracle/logs/test_20260201_161146/learner/log

@@ -1,0 +1,15 @@
+WARNING:tensorflow:From learner.py:30: The name tf.logging.set_verbosity is deprecated. Please use tf.compat.v1.logging.set_verbosity instead.
+
+WARNING:tensorflow:From learner.py:30: The name tf.logging.ERROR is deprecated. Please use tf.compat.v1.logging.ERROR instead.
+
+[Oracle Learner] Starting with observation_space=(729,)
+Traceback (most recent call last):
+  File "learner.py", line 177, in <module>
+    main()
+  File "learner.py", line 81, in main
+    weights_socket.bind(f'tcp://*:{args.param_port}')
+  File "/home/brandonrhan/miniconda/envs/tf115/lib/python3.7/site-packages/zmq/sugar/socket.py", line 214, in bind
+    super().bind(addr)
+  File "zmq/backend/cython/socket.pyx", line 540, in zmq.backend.cython.socket.Socket.bind
+  File "zmq/backend/cython/checkrc.pxd", line 28, in zmq.backend.cython.checkrc._check_rc
+zmq.error.ZMQError: Address already in use

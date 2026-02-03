@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # 共享的 Learner (在 host 上运行，或者单独容器)
+  learner:
+    build:
+      context: .
+      dockerfile: Dockerfile.learner
+    container_name: oracle_learner
+    volumes:
+      - ./logs/learner:/app/logs
+      - ./learner_n:/app/learner_n
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    command: >
+      python /app/learner_n/learner.py
+      --data_port 5000
+      --param_port 5001
+      --exp_path /app/logs
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # 训练实例 1
+  instance_0:
+    build:
+      context: .
+      dockerfile: Dockerfile.oracle
+    container_name: oracle_instance_0
+    environment:
+      - LEARNER_IP=learner
+      - LEARNER_DATA_PORT=5000
+      - LEARNER_PARAM_PORT=5001
+      - INSTANCE_ID=0
+    depends_on:
+      - learner
+    volumes:
+      - ./logs/instance_0:/app/logs
+
+  # 训练实例 2
+  instance_1:
+    build:
+      context: .
+      dockerfile: Dockerfile.oracle
+    container_name: oracle_instance_1
+    environment:
+      - LEARNER_IP=learner
+      - LEARNER_DATA_PORT=5000
+      - LEARNER_PARAM_PORT=5001
+      - INSTANCE_ID=1
+    depends_on:
+      - learner
+    volumes:
+      - ./logs/instance_1:/app/logs
+
+  # 训练实例 3 (可选，根据CPU资源)
+  instance_2:
+    build:
+      context: .
+      dockerfile: Dockerfile.oracle
+    container_name: oracle_instance_2
+    environment:
+      - LEARNER_IP=learner
+      - LEARNER_DATA_PORT=5000
+      - LEARNER_PARAM_PORT=5001
+      - INSTANCE_ID=2
+    depends_on:
+      - learner
+    volumes:
+      - ./logs/instance_2:/app/logs
+
+  # 训练实例 4 (可选)
+  instance_3:
+    build:
+      context: .
+      dockerfile: Dockerfile.oracle
+    container_name: oracle_instance_3
+    environment:
+      - LEARNER_IP=learner
+      - LEARNER_DATA_PORT=5000
+      - LEARNER_PARAM_PORT=5001
+      - INSTANCE_ID=3
+    depends_on:
+      - learner
+    volumes:
+      - ./logs/instance_3:/app/logs

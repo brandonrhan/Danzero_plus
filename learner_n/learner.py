@@ -1,3 +1,10 @@
+"""
+Oracle Learner for DanZero
+
+Uses 729-dimensional input (original 567 + 3*54 oracle info).
+Deep Monte Carlo training for Q-Network.
+"""
+
 import multiprocessing
 import os
 import pickle
@@ -25,6 +32,9 @@ config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 set_session(tf.Session(config=config))
 
+# Oracle input dimension: 675 (state) + 54 (action) = 729
+ORACLE_INPUT_DIM = 729
+
 parser = ArgumentParser()
 parser.add_argument('--alg', type=str, default='MC', help='The RL algorithm')
 parser.add_argument('--env', type=str, default='GuanDan', help='The game environment')
@@ -46,17 +56,21 @@ parser.add_argument('--record_throughput_interval', type=int, default=5,
 parser.add_argument('--num_envs', type=int, default=1, help='The number of environment copies')
 parser.add_argument('--ckpt_save_freq', type=int, default=3000, help='The number of updates between each weights saving')
 parser.add_argument('--ckpt_save_type', type=str, default='weight', help='Type of checkpoint file will be recorded : weight(smaller) or checkpoint(bigger')
-parser.add_argument('--observation_space', type=int, default=(567,),
-                    help='The YAML configuration file')
+# Oracle: 使用729维输入
+parser.add_argument('--observation_space', type=int, default=(ORACLE_INPUT_DIM,),
+                    help='Observation space dimension (729 for oracle)')
 parser.add_argument('--action_space', type=int, default=(5, 216),
-                    help='The YAML configuration file')
+                    help='Action space: 5 types, max 216 actions per type')
 parser.add_argument('--epsilon', type=float, default=0.01,
-                    help='Epsilon')
+                    help='Epsilon for exploration')
 
 def main():
+    """Main entry point for oracle learner"""
     # Parse input parameters
     args, unknown_args = parser.parse_known_args()
     unknown_args = parse_cmdline_kwargs(unknown_args)
+    
+    print(f"[Oracle Learner] Starting with observation_space={args.observation_space}")
 
     # Load config file
     load_yaml_config(args, 'learner')

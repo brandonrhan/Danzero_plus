@@ -1,0 +1,52 @@
+Process Process-1:
+Traceback (most recent call last):
+  File "/home/brandonrhan/miniconda/envs/tf115/lib/python3.7/multiprocessing/process.py", line 297, in _bootstrap
+    self.run()
+  File "/home/brandonrhan/miniconda/envs/tf115/lib/python3.7/multiprocessing/process.py", line 99, in run
+    self._target(*self._args, **self._kwargs)
+  File "game_oracle.py", line 706, in exit_wrapper
+    run_one_client(index, *x, **kw)
+  File "game_oracle.py", line 695, in run_one_client
+    client.connect()
+  File "/home/brandonrhan/miniconda/envs/tf115/lib/python3.7/site-packages/ws4py/client/__init__.py", line 225, in connect
+    self.sock.connect(self.bind_addr)
+ConnectionRefusedError: [Errno 111] Connection refused
+Process Process-2:
+Traceback (most recent call last):
+  File "/home/brandonrhan/miniconda/envs/tf115/lib/python3.7/multiprocessing/process.py", line 297, in _bootstrap
+    self.run()
+  File "/home/brandonrhan/miniconda/envs/tf115/lib/python3.7/multiprocessing/process.py", line 99, in run
+    self._target(*self._args, **self._kwargs)
+  File "game_oracle.py", line 706, in exit_wrapper
+    run_one_client(index, *x, **kw)
+  File "game_oracle.py", line 695, in run_one_client
+    client.connect()
+  File "/home/brandonrhan/miniconda/envs/tf115/lib/python3.7/site-packages/ws4py/client/__init__.py", line 225, in connect
+    self.sock.connect(self.bind_addr)
+ConnectionRefusedError: [Errno 111] Connection refused
+Process Process-3:
+Traceback (most recent call last):
+  File "/home/brandonrhan/miniconda/envs/tf115/lib/python3.7/multiprocessing/process.py", line 297, in _bootstrap
+    self.run()
+  File "/home/brandonrhan/miniconda/envs/tf115/lib/python3.7/multiprocessing/process.py", line 99, in run
+    self._target(*self._args, **self._kwargs)
+  File "game_oracle.py", line 706, in exit_wrapper
+    run_one_client(index, *x, **kw)
+  File "game_oracle.py", line 695, in run_one_client
+    client.connect()
+  File "/home/brandonrhan/miniconda/envs/tf115/lib/python3.7/site-packages/ws4py/client/__init__.py", line 225, in connect
+    self.sock.connect(self.bind_addr)
+ConnectionRefusedError: [Errno 111] Connection refused
+Process Process-4:
+Traceback (most recent call last):
+  File "/home/brandonrhan/miniconda/envs/tf115/lib/python3.7/multiprocessing/process.py", line 297, in _bootstrap
+    self.run()
+  File "/home/brandonrhan/miniconda/envs/tf115/lib/python3.7/multiprocessing/process.py", line 99, in run
+    self._target(*self._args, **self._kwargs)
+  File "game_oracle.py", line 706, in exit_wrapper
+    run_one_client(index, *x, **kw)
+  File "game_oracle.py", line 695, in run_one_client
+    client.connect()
+  File "/home/brandonrhan/miniconda/envs/tf115/lib/python3.7/site-packages/ws4py/client/__init__.py", line 225, in connect
+    self.sock.connect(self.bind_addr)
+ConnectionRefusedError: [Errno 111] Connection refused

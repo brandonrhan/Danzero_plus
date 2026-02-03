@@ -24,6 +24,10 @@ parser.add_argument('--ip', type=str, default='127.0.0.1',
                     help='IP address of learner server')
 parser.add_argument('--action_port', type=int, default=6000,
                     help='Learner server port to send training data')
+parser.add_argument('--server_port', type=int, default=23457,
+                    help='Game server port (23457 for oracle proxy, 23456 for direct)')
+parser.add_argument('--oracle', action='store_true', default=True,
+                    help='Enable oracle mode (receive all players hand cards)')
 
 
 RANK = {
@@ -60,6 +64,12 @@ def _process_action_seq(sequence, length=20):
 
 
 class MyClient(WebSocketClient):
+    # 调试用：记录前10局的oracle数据
+    _debug_records = []
+    _debug_count = 0
+    _debug_max = 10
+    _debug_file = '/mnt/c/Users/admin/Documents/GitHub/danzero_oracle/logs/oracle_debug.json'
+    
     def __init__(self, url, args):
         super().__init__(url)
         self.args = args
@@ -74,12 +84,15 @@ class MyClient(WebSocketClient):
         self.rank = 1
         self.oppo_rank = 1
         self.playing_self = -1
+        
+        # Oracle: 存储所有玩家手牌
+        self.all_hand_cards = []
 
         # 初始化zmq
         self.context = zmq.Context()
         self.context.linger = 0
         self.socket = self.context.socket(zmq.REQ)
-        self.socket.connect(f'tcp://localhost:{6000+args.client_index}')
+        self.socket.connect(f'tcp://localhost:{args.action_port+args.client_index}')
         
     def opened(self):
         pass
@@ -91,6 +104,11 @@ class MyClient(WebSocketClient):
         # 先序列化收到的消息，转为Python中的字典
         message = json.loads(str(message))
         # print(message)
+        
+        # Oracle: 读取所有玩家手牌
+        if 'allHandCards' in message:
+            self.all_hand_cards = message['allHandCards']
+        
         if message['type'] == 'notify':
             # 牌局开始记录位置
             if message['stage'] == 'beginning':
@@ -210,7 +228,7 @@ class MyClient(WebSocketClient):
                 if self.flag == 0:       # 总共牌减去初始手牌
                     init_hand = card2num(message['handCards'])
                     for ele in init_hand:
-                        self.other_lefggt_hands[ele] -= 1
+                        self.other_left_hands[ele] -= 1
                     self.flag = 1
 
                 # 准备状态数据
@@ -434,6 +452,114 @@ class MyClient(WebSocketClient):
 
         cur_rank_batch = np.repeat(cur_rank[np.newaxis, :], num_legal_actions, axis=0)
 
+        # ========== Oracle: 其他玩家的完整手牌 (3*54=162维) ==========
+        # 下家手牌 (position + 1) % 4
+        if len(self.all_hand_cards) == 4:
+            down_pos = (self.mypos + 1) % 4
+            down_handcards = card2array(card2num(self.all_hand_cards[down_pos]))
+        else:
+            down_handcards = np.zeros(54, dtype=np.int8)
+        down_handcards_batch = np.repeat(down_handcards[np.newaxis, :], num_legal_actions, axis=0)
+        
+        # 队友手牌 (position + 2) % 4
+        if len(self.all_hand_cards) == 4:
+            teammate_pos = (self.mypos + 2) % 4
+            teammate_handcards = card2array(card2num(self.all_hand_cards[teammate_pos]))
+        else:
+            teammate_handcards = np.zeros(54, dtype=np.int8)
+        teammate_handcards_batch = np.repeat(teammate_handcards[np.newaxis, :], num_legal_actions, axis=0)
+        
+        # 上家手牌 (position + 3) % 4
+        if len(self.all_hand_cards) == 4:
+            up_pos = (self.mypos + 3) % 4
+            up_handcards = card2array(card2num(self.all_hand_cards[up_pos]))
+        else:
+            up_handcards = np.zeros(54, dtype=np.int8)
+        up_handcards_batch = np.repeat(up_handcards[np.newaxis, :], num_legal_actions, axis=0)
+        # ========== End Oracle ==========
+        
+        # 调试：记录前10局的数据
+        if MyClient._debug_count < MyClient._debug_max:
+            import json as json_module
+            # 先计算x_batch和x_no_action以便验证
+            _x_batch_test = np.hstack((my_handcards_batch,
+                            universal_card_flag_batch,
+                            other_handcards_batch,
+                            last_action_batch,
+                            last_teammate_action_batch,
+                            down_played_cards_batch,
+                            teammate_played_cards_batch,
+                            up_played_cards_batch,
+                            down_num_cards_left_batch,
+                            teammate_num_cards_left_batch,
+                            up_num_cards_left_batch,
+                            self_rank_batch,
+                            oppo_rank_batch,
+                            cur_rank_batch,
+                            down_handcards_batch,
+                            teammate_handcards_batch,
+                            up_handcards_batch,
+                            my_action_batch))
+            _x_no_action_test = np.hstack((my_handcards,
+                                universal_card_flag,
+                                other_handcards,
+                                last_action,
+                                last_teammate_action,
+                                down_played_cards,
+                                teammate_played_cards,
+                                up_played_cards,
+                                down_num_cards_left,
+                                teammate_num_cards_left,
+                                up_num_cards_left,
+                                self_rank,
+                                oppo_rank,
+                                cur_rank,
+                                down_handcards,
+                                teammate_handcards,
+                                up_handcards))
+            
+            # Oracle数据在x_no_action中的位置: [513:675]
+            # Oracle数据在x_batch中的位置: [513:675] (不含action)
+            oracle_start_idx = 513
+            oracle_end_idx = 675
+            
+            debug_record = {
+                'count': MyClient._debug_count,
+                'mypos': self.mypos,
+                'my_handcards_raw': message['handCards'],
+                'all_hand_cards_raw': self.all_hand_cards,
+                # 完整的state vector (675维)
+                'x_no_action_vector': _x_no_action_test.astype(int).tolist(),
+                # 分段展示
+                'state_segments': {
+                    'my_handcards[0:54]': my_handcards.astype(int).tolist(),
+                    'universal_card_flag[54:66]': universal_card_flag.astype(int).tolist(),
+                    'other_handcards[66:120]': other_handcards.astype(int).tolist(),
+                    'last_action[120:174]': last_action.astype(int).tolist(),
+                    'last_teammate_action[174:228]': last_teammate_action.astype(int).tolist(),
+                    'down_played_cards[228:282]': down_played_cards.astype(int).tolist(),
+                    'teammate_played_cards[282:336]': teammate_played_cards.astype(int).tolist(),
+                    'up_played_cards[336:390]': up_played_cards.astype(int).tolist(),
+                    'down_num_cards_left[390:418]': down_num_cards_left.astype(int).tolist(),
+                    'teammate_num_cards_left[418:446]': teammate_num_cards_left.astype(int).tolist(),
+                    'up_num_cards_left[446:474]': up_num_cards_left.astype(int).tolist(),
+                    'self_rank[474:487]': self_rank.astype(int).tolist(),
+                    'oppo_rank[487:500]': oppo_rank.astype(int).tolist(),
+                    'cur_rank[500:513]': cur_rank.astype(int).tolist(),
+                    'down_handcards[513:567]': down_handcards.astype(int).tolist(),
+                    'teammate_handcards[567:621]': teammate_handcards.astype(int).tolist(),
+                    'up_handcards[621:675]': up_handcards.astype(int).tolist(),
+                },
+                'x_no_action_shape': list(_x_no_action_test.shape),
+                'x_batch_shape': list(_x_batch_test.shape),
+                'dim_check_passed': _x_batch_test.shape[1] == 729 and len(_x_no_action_test) == 675,
+            }
+            MyClient._debug_records.append(debug_record)
+            MyClient._debug_count += 1
+            # 每次都写入文件
+            with open(MyClient._debug_file, 'w') as f:
+                json_module.dump(MyClient._debug_records, f, indent=2)
+
         x_batch = np.hstack((my_handcards_batch,
                         universal_card_flag_batch,
                         other_handcards_batch,
@@ -448,6 +574,10 @@ class MyClient(WebSocketClient):
                         self_rank_batch,
                         oppo_rank_batch,
                         cur_rank_batch,
+                        # Oracle: 其他玩家完整手牌
+                        down_handcards_batch,
+                        teammate_handcards_batch,
+                        up_handcards_batch,
                         my_action_batch))
         x_no_action = np.hstack((my_handcards,
                             universal_card_flag,
@@ -462,7 +592,11 @@ class MyClient(WebSocketClient):
                             up_num_cards_left,
                             self_rank,
                             oppo_rank,
-                            cur_rank
+                            cur_rank,
+                            # Oracle: 其他玩家完整手牌
+                            down_handcards,
+                            teammate_handcards,
+                            up_handcards
                             ))
         obs = {
             'x_batch': x_batch.astype(np.float32),
@@ -643,7 +777,9 @@ class MyClient(WebSocketClient):
 
 def run_one_client(index, args):
     args.client_index = index
-    client = MyClient(f'ws://127.0.0.1:23456/game/client{index}', args)
+    # 使用命令行指定的端口（默认23457是oracle proxy端口）
+    server_port = getattr(args, 'server_port', 23457)
+    client = MyClient(f'ws://127.0.0.1:{server_port}/game/client{index}', args)
     client.connect()
     client.run_forever()
 

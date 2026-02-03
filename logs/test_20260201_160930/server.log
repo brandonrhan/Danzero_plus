@@ -1,0 +1,6 @@
+[I 260201 16:09:32 server:39] Ready for connect. [23456]
+[I 260201 16:09:39 web:2239] 101 GET /game/client0 (127.0.0.1) 0.67ms
+[I 260201 16:09:39 web:2239] 101 GET /game/client1 (127.0.0.1) 0.44ms
+[I 260201 16:09:39 web:2239] 101 GET /game/client2 (127.0.0.1) 0.40ms
+[I 260201 16:09:39 web:2239] 101 GET /game/client3 (127.0.0.1) 0.58ms
+[I 260201 16:09:39 server:77] 失去连接

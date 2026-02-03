@@ -1,6 +1,28 @@
+"""
+Oracle Q-Network Model for DanZero
+
+This model takes oracle information (all players' hand cards) as input.
+Input dimension: 729 (original 567 + 3*54 oracle info)
+
+State breakdown (without action = 675 dims):
+- Original state: 513 dims
+- Oracle info: 162 dims (3 players * 54 cards each)
+  - down_handcards: 54 (下家完整手牌)
+  - teammate_handcards: 54 (队友完整手牌)  
+  - up_handcards: 54 (上家完整手牌)
+
+With action: 675 + 54 = 729 dims
+"""
+
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.backend import get_session
+
+
+# Oracle state dimension (without action)
+ORACLE_STATE_DIM = 675  # 513 + 162
+# Full input dimension (with action)
+ORACLE_INPUT_DIM = 729  # 675 + 54
 
 
 def combined_shape(length, shape=None):
@@ -19,7 +41,14 @@ def mlp(x, hidden_sizes=(32,), activation=tf.tanh, output_activation=None):
     return tf.layers.dense(x, units=hidden_sizes[-1], activation=output_activation)
 
 
-class GDModel():
+class GDOracleModel():
+    """
+    Oracle Q-Network Model
+    
+    Takes 729-dimensional input (state + oracle + action) and outputs Q-value.
+    Uses 5-layer MLP with 512 units each.
+    """
+    
     def __init__(self, observation_space, action_space, config=None, model_id='0', session=None):
         with tf.variable_scope(model_id):
             self.x_ph = placeholder(shape=observation_space)
@@ -85,19 +114,26 @@ class GDModel():
         return self.sess.run(self.values, feed_dict={self.x_ph: x_batch})
 
     def build(self) -> None:
+        """Build the Q-Network with 5 hidden layers of 512 units each"""
         with tf.variable_scope(self.scope):
             with tf.variable_scope('v'):
+                # Same architecture as original, just with larger input (729 dims)
                 self.values = mlp(self.x_ph, [512, 512, 512, 512, 512, 1], activation='tanh',
                                             output_activation=None)
 
 if __name__ == '__main__':
-    model = GDModel((567,), (5, 216))
-    with open('/home/luyd/guandan/actor_torch/q_network.ckpt', 'rb') as f:
-        import pickle
-        new_weights = pickle.load(f)
-    model.set_weights(new_weights)
-    b = np.load("/home/luyd/guandan/actor_ppo/debug128.npy", allow_pickle=True).item()
-    state = b['x_batch'][7]
+    # Test the oracle model
+    print(f"Oracle Model Input Dimension: {ORACLE_INPUT_DIM}")
+    print(f"Oracle State Dimension (without action): {ORACLE_STATE_DIM}")
+    
+    model = GDOracleModel((ORACLE_INPUT_DIM,), (5, 216))
+    print("Model created successfully!")
+    
+    # Test forward pass
+    test_input = np.random.randn(1, ORACLE_INPUT_DIM).astype(np.float32)
+    output = model.forward(test_input)
+    print(f"Test forward pass output shape: {output.shape}")
+    print(f"Test output value: {output[0][0]:.4f}")
     info = model.forward(state)
     info = info.reshape(-1,)
     info = info.argsort()[-10:][::-1].tolist()

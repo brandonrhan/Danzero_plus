@@ -1,0 +1,24 @@
+2026-02-04 00:02:11,836 - INFO - Starting Oracle Proxy Server on port 23467
+2026-02-04 00:02:11,836 - INFO - Forwarding to upstream server at localhost:23466
+2026-02-04 00:02:11,851 - INFO - server listening on 0.0.0.0:23467
+2026-02-04 00:02:11,852 - INFO - Proxy server is running. Press Ctrl+C to stop.
+2026-02-04 00:02:12,983 - INFO - connection open
+2026-02-04 00:02:12,983 - INFO - New client connected, assigned position 0, path=/game/client0
+2026-02-04 00:02:12,988 - ERROR - Error connecting to upstream: [Errno 111] Connect call failed ('127.0.0.1', 23466)
+2026-02-04 00:02:12,988 - INFO - Client at position 0 disconnected
+2026-02-04 00:02:12,989 - INFO - connection closed
+2026-02-04 00:02:13,186 - INFO - connection open
+2026-02-04 00:02:13,186 - INFO - New client connected, assigned position 1, path=/game/client1
+2026-02-04 00:02:13,187 - ERROR - Error connecting to upstream: [Errno 111] Connect call failed ('127.0.0.1', 23466)
+2026-02-04 00:02:13,187 - INFO - Client at position 1 disconnected
+2026-02-04 00:02:13,188 - INFO - connection closed
+2026-02-04 00:02:13,390 - INFO - connection open
+2026-02-04 00:02:13,390 - INFO - New client connected, assigned position 2, path=/game/client2
+2026-02-04 00:02:13,391 - ERROR - Error connecting to upstream: [Errno 111] Connect call failed ('127.0.0.1', 23466)
+2026-02-04 00:02:13,392 - INFO - Client at position 2 disconnected
+2026-02-04 00:02:13,392 - INFO - connection closed
+2026-02-04 00:02:13,592 - INFO - connection open
+2026-02-04 00:02:13,593 - INFO - New client connected, assigned position 3, path=/game/client3
+2026-02-04 00:02:13,594 - ERROR - Error connecting to upstream: [Errno 111] Connect call failed ('127.0.0.1', 23466)
+2026-02-04 00:02:13,594 - INFO - Client at position 3 disconnected
+2026-02-04 00:02:13,595 - INFO - connection closed

@@ -1,0 +1,11 @@
+2026-02-04 00:05:57.943634: INFO: Server started at 127.0.0.1:23466
+msg_type: server_info
+server_ip: 127.0.0.1
+server_port: 23466
+2026-02-04 00:06:00.631604: INFO: Client connected: client_id 784308044
+2026-02-04 00:06:00.831054: INFO: Client connected: client_id 726542209
+2026-02-04 00:06:01.033605: INFO: Client connected: client_id 1031756006
+2026-02-04 00:06:01.234152: INFO: Client connected: client_id 291281274
+2026-02-04 00:06:55.365657: INFO: Client disconnected: client_id 291281274
+2026-02-04 00:06:55.365797: SEVERE: Failed to handle disconnection for client_id 291281274
+Error: Null check operator used on a null value

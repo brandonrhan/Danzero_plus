@@ -10,6 +10,9 @@ CardToNum = {
     'SB':52, 'HR':53
 }
 
+# 反向映射：数字转字符串
+NumToCard = {v: k for k, v in CardToNum.items()}
+
 def card2num(list_cards):      # 将字符串转换成数字
     res = []   
     if list_cards == None:
@@ -20,6 +23,12 @@ def card2num(list_cards):      # 将字符串转换成数字
         if ele in CardToNum:
             res.append(CardToNum[ele])
     return res
+
+def num2card(num):
+    """将数字转换为卡牌字符串"""
+    if num == -1:
+        return None
+    return NumToCard.get(num, None)
 
 def card2array(list_cards):
     if len(list_cards) == 0:

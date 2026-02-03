@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/mnt/c/Users/admin/Documents/GitHub/Danzero_plus/wintest/torch/../danzero/client0_with_log.py", line 23, in <module>
+    from pyarrow import deserialize, serialize
+ImportError: cannot import name 'deserialize' from 'pyarrow' (/home/brandonrhan/miniconda/envs/rl/lib/python3.11/site-packages/pyarrow/__init__.py)
